@@ -3,21 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>peerp2p — Local & P2P Messenger</title>
+    <title>peerp2p Voice</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="app-shell">
-      <aside class="guilds-nav" aria-label="App navigation">
-        <div class="guild-icon active" aria-label="Messages">💬</div>
-        <div class="guild-icon" aria-label="Community">🌿</div>
-        <div class="guild-icon" aria-label="Games">🎮</div>
+      <aside class="guilds-nav" aria-label="Navigation">
+        <div class="guild-icon active" aria-label="Voice chat">🎙️</div>
+        <div class="guild-icon" aria-label="People">👥</div>
+        <div class="guild-icon" aria-label="Settings">⚙️</div>
       </aside>
 
-      <aside class="channels-sidebar" aria-label="Peer list sidebar">
+      <aside class="channels-sidebar" aria-label="Peer list panel">
         <header class="sidebar-header">
-          <h1 class="brand-title">peerp2p</h1>
-          <span id="status-badge" class="status-badge online">Local Mode</span>
+          <div>
+            <p class="eyebrow">LOCAL P2P</p>
+            <h1 class="brand-title">peerp2p</h1>
+          </div>
+          <span id="status-badge" class="status-badge online">READY</span>
         </header>
 
         <div class="user-card">
@@ -30,17 +33,28 @@
           </button>
         </div>
 
-        <div class="section-label">ACTIVE PEERS</div>
+        <div class="section-label">PEERS</div>
         <ul id="peer-list" class="peer-list" aria-live="polite"></ul>
       </aside>
 
-      <main class="chat-viewport" aria-label="Chat panel">
+      <main class="chat-viewport" aria-label="Voice chat panel">
         <header class="chat-header">
           <div>
             <div id="chat-title" class="chat-title">peerp2p-Bot</div>
-            <div class="chat-subtitle">Local Peer Bridge</div>
+            <div class="chat-subtitle">Voice-only P2P rooms</div>
+          </div>
+
+          <div class="header-actions">
+            <button id="btn-toggle-mic" class="action-btn" type="button">Mic: On</button>
+            <button id="btn-call" class="action-btn primary" type="button">Call</button>
+            <button id="btn-hangup" class="action-btn danger" type="button">Hang Up</button>
           </div>
         </header>
+
+        <section class="call-panel">
+          <div class="pill">Voice Only</div>
+          <div class="call-state" id="call-status">No active call</div>
+        </section>
 
         <div id="messages-container" class="messages-container" aria-live="polite"></div>
 
@@ -48,7 +62,7 @@
           <input
             id="message-input"
             type="text"
-            placeholder="Type a message..."
+            placeholder="Type a quick message..."
             autocomplete="off"
             aria-label="Message input"
           />
@@ -57,6 +71,6 @@
       </main>
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
