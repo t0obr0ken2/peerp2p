@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>peerp2p — Local & P2P Messenger</title>
+  <style>
+    :root {
+      --bg-darkest: #0e1015;
+      --bg-sidebar: #1e222b;
+      --bg-chat: #141820;
+      --bg-input: #282e3d;
+      --accent-color: #5865f2;
+      --accent-green: #23a55a;
+      --text-main: #f2f3f5;
+      --text-muted: #949ba4;
+      --border-color: #2b303c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html { height: 100%; width: 100%; font-family: system-ui, sans-serif; background: var(--bg-darkest); color: var(--text-main); overflow: hidden; }
+    .app-container { display: flex; height: 100vh; width: 100vw; }
+
+    /* Discord-Style Left Sidebar */
+    .guilds-nav { width: 72px; background: var(--bg-darkest); display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; border-right: 1px solid var(--border-color); }
+    .guild-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--bg-sidebar); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; }
+    .guild-icon.active { border-radius: 16px; background: var(--accent-color); }
+
+    /* Channels Sidebar */
+    .channels-sidebar { width: 260px; background: var(--bg-sidebar); display: flex; flex-direction: column; border-right: 1px solid var(--border-color); }
+    .sidebar-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
+    .brand-title { font-size: 1.1rem; font-weight: 800; }
+    .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 600; background: var(--accent-color); }
+
+    .user-card { padding: 10px; margin: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .peer-id-display { font-size: 0.8rem; font-weight: bold; color: var(--accent-green); }
+
+    .peer-list { list-style: none; overflow-y: auto; flex: 1; padding: 8px; }
+    .peer-item { padding: 10px; border-radius: 6px; cursor: pointer; display: flex; gap: 10px; margin-bottom: 4px; background: rgba(255,255,255,0.03); }
+    .peer-item.active { background: rgba(255,255,255,0.1); font-weight: bold; }
+
+    /* WhatsApp-Style Main Chat Viewport */
+    .chat-viewport { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
+    .chat-header { height: 60px; padding: 0 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+    .messages-container { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    
+    .message-bubble { max-width: 60%; padding: 10px 14px; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; }
+    .message-bubble.incoming { align-self: flex-start; background: var(--bg-sidebar); }
+    .message-bubble.outgoing { align-self: flex-end; background: #005c4b; }
+    .meta { font-size: 0.65rem; color: rgba(255,255,255,0.5); text-align: right; margin-top: 4px; }
+
+    .input-area { padding: 16px; background: var(--bg-sidebar); display: flex; gap: 12px; }
+    .input-area input { flex: 1; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 20px; padding: 12px 18px; color: #fff; outline: none; }
+    .send-btn { background: var(--accent-color); color: white; border: none; padding: 0 20px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <aside class="guilds-nav">
+      <div class="guild-icon active">💬</div>
+      <div class="guild-icon">🌿</div>
+      <div class="guild-icon">🎮</div>
+    </aside>
+
+    <section class="channels-sidebar">
+      <header class="sidebar-header">
+        <h1 class="brand-title">peerp2p</h1>
+        <span id="status-badge" class="badge">Local Mode</span>
+      </header>
+
+      <div class="user-card">
+        <div>
+          <div style="font-size:0.7rem; color:var(--text-muted)">YOUR ID</div>
+          <div id="my-peer-id" class="peer-id-display">Generating...</div>
+        </div>
+        <button id="btn-copy" style="background:none; border:none; color:white; cursor:pointer;" title="Copy ID">📋</button>
+      </div>
+
+      <div style="font-size:0.7rem; padding:8px 12px; color:var(--text-muted);">ACTIVE PEERS</div>
+      <ul class="peer-list" id="peer-list">
+        <li class="peer-item active" onclick="selectPeer('peerp2p-Bot')">🤖 peerp2p-Bot</li>
+      </ul>
+    </section>
+
+    <main class="chat-viewport">
+      <header class="chat-header">
+        <div>
+          <span id="chat-title" style="font-weight:bold;">peerp2p-Bot</span>
+          <div style="font-size:0.75rem; color:var(--accent-green);">Local Peer Bridge</div>
+        </div>
+      </header>
+
+      <div class="messages-container" id="messages-container">
+        <div class="message-bubble incoming">
+          Welcome to peerp2p! Open this page in a second tab on your Chromebook to chat between tabs automatically.
+          <div class="meta">System</div>
+        </div>
+      </div>
+
+      <form class="input-area" id="chat-form">
+        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+        <button type="submit" class="send-btn">Send</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    // Generate Unique ID for local tab session
+    const localId = 'Peer-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('my-peer-id').textContent = localId;
+
+    let activePeer = 'peerp2p-Bot';
+    const channel = new BroadcastChannel('peerp2p_channel');
+
+    // Handle incoming messages from other local browser tabs
+    channel.onmessage = (event) => {
+      const { sender, text } = event.data;
+      if (sender !== localId) {
+        addPeerToList(sender);
+        renderMessage(text, 'incoming', sender);
+      }
+    };
+
+    // Form Event Handler
+    document.getElementById('chat-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('message-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      renderMessage(text, 'outgoing', 'Me');
+      input.value = '';
+
+      if (activePeer === 'peerp2p-Bot') {
+        setTimeout(() => {
+          renderMessage(`Echo: ${text}`, 'incoming', 'peerp2p-Bot');
+        }, 500);
+      } else {
+        channel.postMessage({ sender: localId, text });
+      }
+    });
+
+    // Copy ID Button Action
+    document.getElementById('btn-copy').addEventListener('click', () => {
+      navigator.clipboard.writeText(localId);
+      alert('Copied ID: ' + localId);
+    });
+
+    function renderMessage(text, direction, sender) {
+      const container = document.getElementById('messages-container');
+      const bubble = document.createElement('div');
+      bubble.className = `message-bubble ${direction}`;
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      bubble.innerHTML = `<strong>${sender}:</strong> ${text}<div class="meta">${time}</div>`;
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function addPeerToList(peerId) {
+      const list = document.getElementById('peer-list');
+      if (document.getElementById(`peer-${peerId}`)) return;
+
+      const li = document.createElement('li');
+      li.id = `peer-${peerId}`;
+      li.className = 'peer-item';
+      li.textContent = '💬 ' + peerId;
+      li.onclick = () => selectPeer(peerId);
+      list.appendChild(li);
+    }
+
+    function selectPeer(peerId) {
+      activePeer = peerId;
+      document.getElementById('chat-title').textContent = peerId;
+      document.querySelectorAll('.peer-item').forEach(el => el.classList.remove('active'));
+      const item = document.getElementById(`peer-${peerId}`);
+      if (item) item.classList.add('active');
+    }
+  </script>
+</body>
+</html>
